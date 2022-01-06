@@ -23,21 +23,21 @@ jobs:
       - run: npm ci
       - run: npm run lint
     
-  playwright:
+  cypress:
     runs-on: ubuntu-20.04
-    name: Playwright
+    name: Cypress
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Playwright
-        uses: microsoft/playwright-github-action@v1
+      - name: Cypress
+        uses: cypress-io/github-action@v2
         with: 
           start: npm run test
 
 
   automerge:
-    needs: [build, playwright]
+    needs: [build, cypress]
     runs-on: ubuntu-latest
     steps:
       - uses: fastify/github-action-merge-dependabot@v2.7.0
