@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Setup Node
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run lint
+    
+  playwright:
+    runs-on: ubuntu-20.04
+    name: Playwright
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Playwright
+        uses: microsoft/playwright-github-action@v1
+        with: 
+          start: npm run test
+
+
+  automerge:
+    needs: [build, playwright]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: fastify/github-action-merge-dependabot@v2.7.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

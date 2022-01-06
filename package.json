@@ -1,0 +1,27 @@
+{
+  "name": "cypress-setup",
+  "description": "Accelerator to speed up Cypress testing",
+  "license": "MIT",
+  "repository": "https://github.com/nearform/cypress-setup",
+  "version": "1.0.0",
+  "scripts": {
+    "lint": "eslint . --ext .js,.jsx",
+    "prepare": "husky install",
+    "test": "cypress run"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^15.0.0",
+    "@commitlint/config-conventional": "^15.0.0",
+    "cypress": "^9.1.1",
+    "eslint": "^8.3.0",
+    "eslint-plugin-cypress": "^2.12.1",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.1.2"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": "eslint --cache --fix"
+  }
+}
