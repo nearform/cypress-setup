@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  linting:
     runs-on: ubuntu-latest
     name: Setup Node
 
@@ -24,7 +24,7 @@ jobs:
       - run: npm run lint
     
   cypress:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     name: Cypress
 
     steps:
@@ -37,9 +37,9 @@ jobs:
 
 
   automerge:
-    needs: [build, cypress]
+    needs: [cypress, linting]
     runs-on: ubuntu-latest
     steps:
-      - uses: fastify/github-action-merge-dependabot@v2.7.0
+      - uses: fastify/github-action-merge-dependabot@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,7 @@
 {
   "baseUrl": "https://www.google.com/",
-  "chromeWebSecurity": false
+  "chromeWebSecurity": false,
+  "video": false,
+  "pluginsFile": false,
+  "supportFile": false
 }

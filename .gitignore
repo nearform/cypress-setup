@@ -1,4 +1,2 @@
 cypress/fixtures
-cypress/plugins
-cypress/support
 node_modules
