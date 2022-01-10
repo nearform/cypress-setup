@@ -10,7 +10,7 @@
     "test": "cypress run"
   },
   "devDependencies": {
-    "@commitlint/cli": "^16.0.1",
+    "@commitlint/cli": "^16.0.2",
     "@commitlint/config-conventional": "^16.0.0",
     "cypress": "^9.1.1",
     "eslint": "^8.6.0",
