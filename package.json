@@ -5,7 +5,8 @@
   "repository": "https://github.com/nearform/cypress-setup",
   "version": "1.0.0",
   "scripts": {
-    "lint": "eslint . --ext .js,.jsx",
+    "build": "tsc --noEmit",
+    "lint": "eslint --cache --fix",
     "prepare": "husky install",
     "test": "cypress run"
   },
