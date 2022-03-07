@@ -1,0 +1,99 @@
+name: Cypress Tests
+
+# You need to ensure that you have setup the SSH Keys on the frontend (private) 
+# and backend (public) repositories, and that the key name is set to 
+# BACKEND_DEPLOY_KEY in this case. This allows the two repositories to talk to 
+# each other if they are private 
+
+# Set the triggers up
+on: [push, pull_request]
+
+# Any environment variables are set here
+env:
+  BACKEND_REPOSITORY: backend_repository
+  FRONTEND_URL: http://localhost:3000
+
+# Runs as a single job
+jobs:
+  cypress-tests:
+    runs-on: ubuntu-latest
+    container:
+      image: cypress/included:9.5.1
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      # Get the name of the branch, we do this to ensure that if there is a corresponding
+      # branch on the backend repository, then we use that, if there isn't then we fall 
+      # back to using the master branch
+      - name: Establish branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Check out backend branch repository code
+        id: checkout_branch
+        if: steps.extract_branch.outputs.branch != 'master'
+        continue-on-error: true
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.BACKEND_REPOSITORY }}
+          ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
+          ref: ${{ steps.extract_branch.outputs.branch }}
+      
+      - name: Check out backend master repository code
+        if: steps.checkout_branch.outcome == 'failure' || steps.extract_branch.outputs.branch == 'master'
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.BACKEND_REPOSITORY }}
+          ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
+
+      - name: Cache backend dependencies
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      
+      - name: Install backend Dependencies
+        run: npm ci --ignore-scripts
+
+      # We setup scripts which might be on the backend repository here
+      # In this example, we migrate the database, seed it and then
+      # ensure that service is up and running
+      - name: Migrate and Seed data in the backend
+        run: |
+          npm run migrate && npm run fixtures && npm run start &
+        env:
+          API_HOST: 127.0.0.1
+          API_PORT: 4000
+          PG_HOST: postgres
+          PG_PORT: 5432
+          PG_DB: postgres
+          PG_USER: postgres
+          PG_PASS: postgres
+
+      - name: Check out frontend repository code
+        uses: actions/checkout@v2
+
+      - name: Cache frontend dependencies
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      
+      - name: Install frontend Dependencies
+        run: npm ci --ignore-scripts
+
+      # Start the frontend server, so that we can run the 
+      # Cypress tests against it
+      - name: Start Server
+        run: npm run start & npx wait-on ${{ FRONTEND_URL }}
+
+      - name: Run Cypress
+        run: cypress run
