@@ -34,27 +34,22 @@ jobs:
       # Get the name of the branch, we do this to ensure that if there is a corresponding
       # branch on the backend repository, then we use that, if there isn't then we fall 
       # back to using the master branch
-      - name: Establish branch name
+      - name: Get Branch Name (merge)
+        if: github.event_name != 'pull_request'
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/head/})" >> $GITHUB_ENV
+       
+      - name: Get Branch Name (pull_request)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
 
-      - name: Check out backend branch repository code
-        id: checkout_branch
-        if: steps.extract_branch.outputs.branch != 'master'
-        continue-on-error: true
+      - name: Check out backend repository code
         uses: actions/checkout@v2
         with:
           repository: ${{ env.BACKEND_REPOSITORY }}
           ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
-          ref: ${{ steps.extract_branch.outputs.branch }}
-      
-      - name: Check out backend master repository code
-        if: steps.checkout_branch.outcome == 'failure' || steps.extract_branch.outputs.branch == 'master'
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ env.BACKEND_REPOSITORY }}
-          ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
+          ref: ${{ env.BRANCH_NAME }}
 
       - name: Cache backend dependencies
         uses: actions/setup-node@v2
