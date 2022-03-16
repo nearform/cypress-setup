@@ -43,17 +43,24 @@ jobs:
         if: github.event_name == 'pull_request'
         shell: bash
         run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
-        
-      - name: Set default BRANCH_NAME
-        if: env.BRANCH_NAME == ''
-        run: echo "BRANCH_NAME=master" >> $GITHUB_ENV
 
+      # Checkout the matching branch if it exists
       - name: Check out backend repository code
+        id: checkout_branch
         uses: actions/checkout@v2
+        continue-on-error: true
         with:
           repository: ${{ env.BACKEND_REPOSITORY }}
           ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
           ref: ${{ env.BRANCH_NAME }}
+      
+      # Checkout the master branch if no branches exist on the backend
+      - name: Check out backend master repository code
+        if: steps.checkout_branch.outcome == 'failure'
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.BACKEND_REPOSITORY }}
+          ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
 
       - name: Cache backend dependencies
         uses: actions/setup-node@v2
