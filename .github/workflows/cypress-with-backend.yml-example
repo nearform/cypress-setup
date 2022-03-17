@@ -62,10 +62,17 @@ jobs:
           repository: ${{ env.BACKEND_REPOSITORY }}
           ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
 
-      - name: Cache backend dependencies
+      - name: Setup backend dependencies
         uses: actions/setup-node@v2
         with:
           node-version: '16'
+      
+      - name: Cache backend repositories
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: npm-backend-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-backend-
       
       - name: Install backend Dependencies
         run: npm ci --ignore-scripts
@@ -88,10 +95,17 @@ jobs:
       - name: Check out frontend repository code
         uses: actions/checkout@v2
 
-      - name: Cache frontend dependencies
+      - name: Setup frontend dependencies
         uses: actions/setup-node@v2
         with:
           node-version: '16'
+
+      - name: Cache frontend repositories
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: npm-frontend-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-frontend-
       
       - name: Install frontend Dependencies
         run: npm ci --ignore-scripts
