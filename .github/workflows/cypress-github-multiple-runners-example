@@ -1,0 +1,71 @@
+name: Cypress Tests
+ 
+on: [push]
+ 
+env:
+  CHUNK_SIZE: 4
+ 
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      # Will contain a json string with an array of 'n' elements, each being a string of spec files deliminted by ','
+      test-chunks: ${{ steps['set-test-chunks'].outputs['test-chunks'] }}
+      # JSON string with ids to use in the next job matrix depending on how many elements are in the above array, eg: [0,1]
+      test-chunk-ids: ${{ steps['set-test-chunk-ids'].outputs['test-chunk-ids'] }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: set-test-chunks
+        name: Set Chunks
+        # Get all the spec files from the directory, group them to be at most 'CHUNK_SIZE' at a time and transform them to json
+        run: echo "::set-output name=test-chunks::$(find cypress/e2e -type f -name "*.ts" | xargs -n$CHUNK_SIZE | tr ' ' ',' | jq -R . | jq -s -cM .)"
+      - id: set-test-chunk-ids
+        name: Set Chunk IDs
+        # Get the number of elements from the above array as an array of indexes
+        run: echo "::set-output name=test-chunk-ids::$(echo $CHUNKS | jq -cM 'to_entries | map(.key)')"
+        env:
+          CHUNKS: ${{ steps['set-test-chunks'].outputs['test-chunks'] }}
+ 
+  cypress-tests:
+    needs:
+      - setup
+    runs-on: ubuntu-latest
+    container:
+      image: cypress/included:10.0.2
+    name: Tests - Chunk ${{ matrix.chunk }}
+    strategy:
+      matrix:
+        # Will be for eg chunk: [0,1]
+        chunk: ${{ fromJson(needs.setup.outputs['test-chunk-ids']) }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+ 
+      - name: Set Permissions
+        run: |
+          chmod -R 777 /github/home
+          chmod -R 777 cypress
+ 
+      - name: Setup Dependencies
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: npm
+ 
+      - name: Install Dependencies
+        run: npm ci --ignore-scripts
+ 
+      - name: Install Jq
+        run: apt-get install jq -y
+ 
+      - name: Run Cypress against 'QA' Environment
+        run: SPECS=$(echo $CHUNKS | jq -cMr '.[${{ matrix.chunk }}] | @text') && npm run cypress --spec "$SPECS"
+        env:
+          CHUNKS: ${{ needs.setup.outputs['test-chunks'] }}
+ 
+      - name: Archive test screenshots
+        uses: actions/upload-artifact@v2
+        if: ${{ failure() }}
+        with:
+          name: screenshots
+          path: cypress/screenshots
