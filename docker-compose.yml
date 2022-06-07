@@ -3,7 +3,7 @@ version: '1'
 services:
 # This container will run Cypress tests
   cypress:
-    image: "cypress/included:9.5.2"
+    image: "cypress/included:10.0.2"
     container_name: cypress
 
     # We can add any arguments like --browser chrome 
