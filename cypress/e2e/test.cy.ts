@@ -4,6 +4,6 @@ describe('Sample test', () => {
     }) 
 
     it('Verify Nearform logo', () => {
-        cy.get('.fusion-logo').should('be.visible')
+        cy.get('body').should('be.visible')
     })
 })
