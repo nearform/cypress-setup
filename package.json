@@ -16,7 +16,7 @@
     "@commitlint/config-conventional": "^17.3.0",
     "@typescript-eslint/eslint-plugin": "^5.45.1",
     "cypress": "^11.2.0",
-    "eslint": "^8.28.0",
+    "eslint": "^8.29.0",
     "eslint-plugin-cypress": "^2.12.1",
     "husky": "^8.0.2",
     "lint-staged": "^13.0.4"
