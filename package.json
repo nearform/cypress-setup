@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^17.4.3",
-    "@commitlint/config-conventional": "^17.4.3",
+    "@commitlint/config-conventional": "^17.4.4",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "cypress": "^12.6.0",
     "eslint": "^8.34.0",
