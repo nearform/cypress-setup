@@ -19,7 +19,7 @@
     "eslint": "^8.39.0",
     "eslint-plugin-cypress": "^2.13.2",
     "husky": "^8.0.3",
-    "lint-staged": "^13.2.1"
+    "lint-staged": "^13.2.2"
   },
   "directories": {
     "test": "tests"
