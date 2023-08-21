@@ -31,7 +31,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Cypress
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with: 
           start: npm run test
 
